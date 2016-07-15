@@ -23,7 +23,6 @@ MultipartRequest multi = new MultipartRequest(request, saveDirectory, maxPostSiz
 //输出反馈信息
  Enumeration files = multi.getFileNames();
      while (files.hasMoreElements()) {
-        System.err.println("ccc");
        String name = (String)files.nextElement();
        File f = multi.getFile(name);
        if(f!=null){

@@ -19,16 +19,14 @@ import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConv
  */
 public class DocConverter {
 	private static final int environment = 1;// 环境 1：windows 2:linux
-	private String fileString;// (只涉及pdf2swf路径问题)
 	private String outputPath = "";// 输入路径 ，如果不设置就输出在默认的位置
-	private String fileName;
+	private String dirName;
 	private File pdfFile;
 	private File swfFile;
 	private File docFile;
-	private File odtFile;
 	
 	public DocConverter(String fileString) {
-		ini(fileString);
+		init(fileString);
 	}
 
 	/**
@@ -37,153 +35,36 @@ public class DocConverter {
 	 * @param fileString
 	 */
 	public void setFile(String fileString) {
-		ini(fileString);
+		init(fileString);
 	}
 
 	/**
 	 * 初始化
 	 * 
-	 * @param fileString
+	 * @param filePath
 	 */
-	private void ini(String fileString) {
-		/*this.fileString = fileString;  
-        fileName = fileString.substring(0, fileString.lastIndexOf("."));  
-        docFile = new File(fileString);  
-        pdfFile = new File(fileName + ".pdf");  
-        swfFile = new File(fileName + ".swf"); */ 
-        
-        try {  
-            this.fileString = fileString;  
-            fileName = fileString.substring(0, fileString.lastIndexOf("/"));  
-            docFile = new File(fileString);  
-            String s = fileString.substring(fileString.lastIndexOf("/") + 1,fileString.lastIndexOf("."));  
-            fileName = fileName + "/" + s;  
-            // 用于处理TXT文档转化为PDF格式乱码,获取上传文件的名称（不需要后面的格式）  
-            String txtName = fileString.substring(fileString.lastIndexOf("."));  
-            // 判断上传的文件是否是TXT文件  
-            if (txtName.equalsIgnoreCase(".txt")) {  
-            	FormatTxt.toUTF(docFile);
-                // 定义相应的ODT格式文件名称  
-                odtFile = new File(fileName + ".odt");  
-                // 将上传的文档重新copy一份，并且修改为ODT格式，然后有ODT格式转化为PDF格式  
-                this.copyFile(docFile, odtFile);  
-                pdfFile = new File(fileName + ".pdf"); // 用于处理PDF文档  
-            } else if (txtName.equals(".pdf") || txtName.equals(".PDF")) {  
-                pdfFile = new File(fileName + ".pdf");  
-                this.copyFile(docFile, pdfFile);  
-            } else {  
-                pdfFile = new File(fileName + ".pdf");  
-            }  
-            swfFile = new File(fileName + ".swf");  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }  
-        
+	private void init(String filePath) {
+		dirName = filePath.substring(0, filePath.lastIndexOf("/"));  
+		docFile = new File(filePath);  
+		String fileName = filePath.substring(filePath.lastIndexOf("/") + 1,filePath.lastIndexOf("."));  
+		dirName = dirName + "/" + fileName;
+		//获得文件后缀名
+		String suffixName = filePath.substring(filePath.lastIndexOf("."));
+		// 判断上传的文件是否是TXT文件  
+		if (suffixName.equalsIgnoreCase(".txt")) {  
+			FormatTxt.toUTF(docFile);
+		    pdfFile = new File(dirName + ".pdf"); // 用于处理PDF文档  
+		} else if (ImgToPDF.isImage(docFile)) {  
+			pdfFile = new File(dirName + ".pdf");  
+			ImgToPDF.img2PDF(filePath, pdfFile.getAbsolutePath());
+		} else {  
+		    pdfFile = new File(dirName + ".pdf");  
+		}  
+		
+		swfFile = new File(dirName + ".swf");  
         
 	}
 	
-	
-	private static void copyFile(File source, File dest)
-	        throws IOException {
-	    FileUtils.copyFile(source, dest);
-	}
-	
-	/**
-	 * 转为PDF
-	 * 
-	 * @param file
-	 */
-	private void doc2pdf() throws Exception {
-		if (docFile.exists()) {
-			if (!pdfFile.exists()) {
-				OpenOfficeConnection connection = new SocketOpenOfficeConnection(8100);
-				try {
-					connection.connect();
-					DocumentConverter converter = new OpenOfficeDocumentConverter(connection);
-					converter.convert(docFile, pdfFile);
-					// close the connection
-					connection.disconnect();
-					System.out.println("****pdf转换成功，PDF输出：" + pdfFile.getPath()+ "****");
-				} catch (java.net.ConnectException e) {
-					e.printStackTrace();
-					System.out.println("****swf转换器异常，openoffice服务未启动！****");
-					throw e;
-				} catch (com.artofsolving.jodconverter.openoffice.connection.OpenOfficeException e) {
-					e.printStackTrace();
-					System.out.println("****swf转换器异常，读取转换文件失败****");
-					throw e;
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw e;
-				}
-			} else {
-				System.out.println("****已经转换为pdf，不需要再进行转化****");
-			}
-		} else {
-			System.out.println("****swf转换器异常，需要转换的文档不存在，无法转换****");
-		}
-	}
-	
-	/**
-	 * 转换成 swf
-	 */
-	@SuppressWarnings("unused")
-	private void pdf2swf() throws Exception {
-		Runtime r = Runtime.getRuntime();
-		if (!swfFile.exists()) {
-			if (pdfFile.exists()) {
-				if (environment == 1) {// windows环境处理
-					try {
-						Process p = r.exec("D:/swftools/pdf2swf.exe "+ pdfFile.getPath() + " -o "+ swfFile.getPath() + " -T 9");
-						System.out.print(loadStream(p.getInputStream()));
-						System.err.print(loadStream(p.getErrorStream()));
-						System.out.print(loadStream(p.getInputStream()));
-						System.err.println("****swf转换成功，文件输出："
-								+ swfFile.getPath() + "****");
-						if (pdfFile.exists()) {
-							pdfFile.delete();
-						}
-
-					} catch (IOException e) {
-						e.printStackTrace();
-						throw e;
-					}
-				} else if (environment == 2) {// linux环境处理
-					try {
-						Process p = r.exec("pdf2swf " + pdfFile.getPath()
-								+ " -o " + swfFile.getPath() + " -T 9");
-						System.out.print(loadStream(p.getInputStream()));
-						System.err.print(loadStream(p.getErrorStream()));
-						System.err.println("****swf转换成功，文件输出："
-								+ swfFile.getPath() + "****");
-						if (pdfFile.exists()) {
-							pdfFile.delete();
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw e;
-					}
-				}
-			} else {
-				System.out.println("****pdf不存在,无法转换****");
-			}
-		} else {
-			System.out.println("****swf已经存在不需要转换****");
-		}
-	}
-
-	static String loadStream(InputStream in) throws IOException {
-
-		int ptr = 0;
-		in = new BufferedInputStream(in);
-		StringBuffer buffer = new StringBuffer();
-
-		while ((ptr = in.read()) != -1) {
-			buffer.append((char) ptr);
-		}
-
-		return buffer.toString();
-	}
 	/**
 	 * 转换主方法
 	 */
@@ -201,8 +82,8 @@ public class DocConverter {
 			System.out.println("****swf转换器开始工作，当前设置运行环境linux****");
 		}
 		try {
-			doc2pdf();
-			pdf2swf();
+			DocToPDF.doc2pdf(docFile, pdfFile);
+			PdfToSwf.pdf2swf(pdfFile, swfFile, environment);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -216,7 +97,7 @@ public class DocConverter {
 	}
 
 	/**
-	 * 返回文件路径
+	 * 返回Swf文件路径
 	 * 
 	 * @param s
 	 */
@@ -236,8 +117,8 @@ public class DocConverter {
 	public void setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
 		if (!outputPath.equals("")) {
-			String realName = fileName.substring(fileName.lastIndexOf("/"),
-					fileName.lastIndexOf("."));
+			String realName = dirName.substring(dirName.lastIndexOf("/"),
+					dirName.lastIndexOf("."));
 			if (outputPath.charAt(outputPath.length()) == '/') {
 				swfFile = new File(outputPath + realName + ".swf");
 			} else {
