@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+	<constant name="struts.devMode" value="true" />
+
+	<!-- 处理编码问题 -->
+	<constant name="struts.i18n.encoding" value="UTF-8" />
+
+	<!-- 前台Action的package -->
+	<package name="default" namespace="/" extends="struts-default">
+
+		<action name="uploadPage">
+			<result>/upload.jsp</result>
+		</action>
+
+		<!-- 上传文件 -->
+		<action name="uploadFile" class="com.diyagea.action.DocConvertAction"
+			method="receiveFile">
+			<result name="success">/process-docs.jsp</result>
+			<result name="input">/upload.jsp</result>
+		</action>
+		
+		<action name="showDocs" class="com.diyagea.action.DocConvertAction"
+			method="showDocs">
+			<result name="success">/show-docs.jsp</result>
+		</action>
+
+	</package>
+</struts>

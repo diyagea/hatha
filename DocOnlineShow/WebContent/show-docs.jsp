@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%
-	String swfFilePath=session.getAttribute("swfpath").toString();
+	//String swfFilePath=session.getAttribute("swfpath").toString();
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -26,7 +26,7 @@
 				var fp = new FlexPaperViewer(	
 						 'FlexPaperViewer',
 						 'viewerPlaceHolder', { config : {
-						 SwfFile : escape('<%=swfFilePath%>'),
+						 SwfFile : escape("${sessionScope.swfPath}"),
 						 Scale : 0.6, 
 						 ZoomTransition : 'easeOut',
 						 ZoomTime : 0.5,

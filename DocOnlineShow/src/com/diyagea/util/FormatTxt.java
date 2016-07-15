@@ -37,7 +37,7 @@ public class FormatTxt {
 		//如果是UTF8，即不用转换编码
 		if(UTF8.equals(charset))
 			return ;
-		
+		System.out.println(charset);
 		try {
 			//获得文件输入流
              isr = new InputStreamReader(new FileInputStream(f),charset);
@@ -50,7 +50,7 @@ public class FormatTxt {
                  sb.append("\r\n");
              }   
              //打印文件内容
-//             System.out.println(sb.toString());
+             System.out.println(sb.toString());
              
              //获得文件输出流
              fos = new FileOutputStream(f); 

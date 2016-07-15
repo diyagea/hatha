@@ -10,7 +10,7 @@
   </welcome-file-list>
 	
 	<!-- struts2配置 start -->
-<!-- 	<filter>
+	<filter>
 		<filter-name>struts2</filter-name>
 		<filter-class>
 			org.apache.struts2.dispatcher.FilterDispatcher
@@ -19,5 +19,5 @@
 	<filter-mapping>
 		<filter-name>struts2</filter-name>
 		<url-pattern>/*</url-pattern>
-	</filter-mapping> -->
+	</filter-mapping>
 </web-app>
